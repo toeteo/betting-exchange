@@ -20,53 +20,61 @@ class Bet:
         self.amount = amount
 
 
-bet_queue_lay = []    # (-odds, id, bet) -> in cima la LAY con quota PIÙ ALTA (minheap)
-bet_queue_back = []   # (odds, id, bet)  -> in cima la BACK con quota PIÙ BASSA
+bet_queue_lay = []    # (odds, id, bet) -> in cima la LAY con quota PIÙ BASSA (minheap)
+bet_queue_back = []   # (-odds, id, bet)  -> in cima la BACK con quota PIÙ ALTA
 matched_bets_queue = deque()   # (back_id, lay_id, importo, quota)
 next_id = 0
 
 
-def receive_bet(ts, is_back, amount, odds) -> float:
+def receive_bet(ts: float, is_back: bool, amount: float, odds: float) -> float:
     global next_id
     next_id += 1
     bet = Bet(next_id, ts, is_back, odds, amount)
     amount_matched = 0.0
 
-    if is_back:   # BACK in arrivo -> cerco nella coda LAY
+    if is_back:
+        # BACK wants the lowest available lay price (lowest ask)
         while bet.amount > 0 and bet_queue_lay:
-            top = bet_queue_lay[0][2]   # LAY con la quota più alta
-            if bet.odds > top.odds:     # quota non compatibile
+            top = bet_queue_lay[0][2]
+            # If the lowest Lay price in the book is higher than what Backer accepts: stop
+            if top.odds > bet.odds:
                 break
 
             qt = min(bet.amount, top.amount)
             bet.amount -= qt
             top.amount -= qt
             amount_matched += qt
+            # Execution price is the resting order's odds (price improvement for Backer)
             matched_bets_queue.append((bet.id, top.id, qt, top.odds))
 
             if top.amount <= 0:
                 heapq.heappop(bet_queue_lay)
 
+        # Unmatched Back bet joins book: sorted highest odds first
         if bet.amount > 0:
-            heapq.heappush(bet_queue_back, (bet.odds, bet.id, bet))
+            heapq.heappush(bet_queue_back, (-bet.odds, bet.id, bet))
 
-    else:         # LAY in arrivo -> cerco nella coda BACK
+    else:
+        # LAY wants the highest available back price (best payout terms)
         while bet.amount > 0 and bet_queue_back:
-            top = bet_queue_back[0][2]  # BACK con la quota più bassa
-            if top.odds > bet.odds:     # quota non compatibile
+            top = bet_queue_back[0][2]
+            # If the best Back price is lower than the minimum odds Layer accepts: stop
+            if top.odds < bet.odds:
                 break
 
             qt = min(bet.amount, top.amount)
             bet.amount -= qt
             top.amount -= qt
             amount_matched += qt
+            # Execution price is the resting order's odds
             matched_bets_queue.append((top.id, bet.id, qt, top.odds))
 
             if top.amount <= 0:
                 heapq.heappop(bet_queue_back)
 
+        # Unmatched Lay bet joins book: sorted lowest odds first
         if bet.amount > 0:
-            heapq.heappush(bet_queue_lay, (-bet.odds, bet.id, bet))
+            heapq.heappush(bet_queue_lay, (bet.odds, bet.id, bet))
 
     return amount_matched
 
