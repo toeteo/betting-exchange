@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>betting exchange</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+            #queues-div {
+                display: flex;
+                flex-direction: row;
+                gap: 4rem;
+            }
+            .queue-div {
+                display: flex;
+                flex-direction: column;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>betting exchange</h1>
+        <p>matched bets so far: <span id="num_matched">0</span></p>
+        <div id="queues-div">
+            <div class="queue-div">
+                <p>lay queue: </p>
+                <div id="lay_queue"></div>
+            </div>
+            <div class="queue-div">
+                <p>back queue: </p>
+                <div id="back_queue"></div>
+            </div>
+        </div>
+        <script>
+            const wsUrl = `ws://${window.location.host}/ws`;
+            const ws = new WebSocket(wsUrl);
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                // render num matched
+                document.getElementById("num_matched").textContent = data.num_matched;
+
+                // render lay queue
+                const layContainer = document.getElementById("lay_queue");
+                layContainer.replaceChildren(); // clear previous elements
+
+                data.lay_queue.forEach(([id, odds, amount]) => {
+                    const p = document.createElement("p");
+                    p.textContent = `ID #${id} | Odds: ${odds.toFixed(2)} | Stake: $${amount.toFixed(2)}`;
+                    layContainer.appendChild(p);
+                });
+
+                // render back queue
+                const backContainer = document.getElementById("back_queue");
+                backContainer.replaceChildren(); // clear previous elements
+
+                data.back_queue.forEach(([id, odds, amount]) => {
+                    const p = document.createElement("p");
+                    p.textContent = `ID #${id} | Odds: ${odds.toFixed(2)} | Stake: $${amount.toFixed(2)}`;
+                    backContainer.appendChild(p);
+                });
+            };
+
+            ws.onopen = () => console.log("Connected to stream");
+            ws.onclose = () => console.log("Disconnected");
+        </script>
+    </body>
+</html>
