@@ -1,6 +1,15 @@
 from collections import deque
 import heapq
 
+def get_queue_lay() -> list:
+    return [(bet.id, bet.odds, bet.amount) for _, _, bet in bet_queue_lay]
+
+def get_queue_back() -> list:
+    return [(bet.id, bet.odds, bet.amount) for _, _, bet in bet_queue_back]
+
+def get_queue_matched() -> int:
+    return len(matched_bets_queue)
+
 
 class Bet:
     def __init__(self, bet_id: int, ts: int, is_back: bool, odds: float, amount: float):
@@ -60,3 +69,5 @@ def receive_bet(ts, is_back, amount, odds) -> float:
             heapq.heappush(bet_queue_lay, (-bet.odds, bet.id, bet))
 
     return amount_matched
+
+    
