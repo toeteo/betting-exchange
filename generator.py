@@ -4,10 +4,10 @@ from time import sleep
 
 bet_link = "http://localhost:8000/bet"
 
-def post_bet(bet_type, bet_amount, bet_odds):
-    print(f"Placing bet: Type={bet_type}, Amount={bet_amount}, Odds={bet_odds}")
+def post_bet(is_back, bet_amount, bet_odds):
+    print(f"Placing bet: Type={is_back}, Amount={bet_amount}, Odds={bet_odds}")
     bet_data = {
-        "bet_type": bet_type,
+        "is_back": is_back,
         "bet_amount": bet_amount,
         "bet_odds": bet_odds
     }
@@ -15,10 +15,10 @@ def post_bet(bet_type, bet_amount, bet_odds):
     return response.json()
 
 def place_bet():
-    bet_type = bool(randint(0, 1))  # Randomly choose True or False
+    is_back = bool(randint(0, 1))  # Randomly choose True or False
     bet_amount = uniform(1.0, 100.0)  # Random bet amount between 1 and 100
     bet_odds = uniform(1.0, 5.0)  # Random odds between 1 and 5
-    result = post_bet(bet_type, bet_amount, bet_odds)
+    result = post_bet(is_back, bet_amount, bet_odds)
     print(f"Response: {result}")
 
 def main():

@@ -1,24 +1,24 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from matcher import get_num_matched, receive_bet, get_queue_lay, get_queue_back
 from time import time
 
 app = FastAPI()
-num_matched = 0
 
 class BetRequest(BaseModel):
-    bet_type: bool
+    is_back: bool # True for BACK, False for LAY
     bet_amount: float
     bet_odds: float
 
 @app.get("/")
 async def root():
-    # num_matched = exchange.get_num_matched()
-    return {"num_matched": num_matched}
+    num_matched = get_num_matched()
+    lay_queue = get_queue_lay()
+    back_queue = get_queue_back()
+    return {"num_matched": num_matched, "lay_queue": lay_queue, "back_queue": back_queue}
 
 @app.post("/bet")
 def place_bet(bet: BetRequest):
-    global num_matched
-    num_matched += 1
     ts = time()
-    # exchange.receive_bet(ts, bet.bet_type, bet.bet_amount, bet.bet_odds)
-    return {"message": "Bet placed", "ts": ts}
+    amount_matched = receive_bet(ts, bet.is_back, bet.bet_amount, bet.bet_odds)
+    return {"amount_matched": amount_matched}

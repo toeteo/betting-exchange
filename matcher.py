@@ -7,7 +7,7 @@ def get_queue_lay() -> list:
 def get_queue_back() -> list:
     return [(bet.id, bet.odds, bet.amount) for _, _, bet in bet_queue_back]
 
-def get_queue_matched() -> int:
+def get_num_matched() -> int:
     return len(matched_bets_queue)
 
 
@@ -28,8 +28,8 @@ next_id = 0
 
 def receive_bet(ts: float, is_back: bool, amount: float, odds: float) -> float:
     global next_id
-    next_id += 1
     bet = Bet(next_id, ts, is_back, odds, amount)
+    next_id += 1
     amount_matched = 0.0
 
     if is_back:
