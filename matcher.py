@@ -32,14 +32,16 @@ def reset():
 
 def get_queue_lay() -> list:
     """Lay orders, lowest odds first (display order)."""
-    bets = sorted((e[3] for e in bet_queue_lay), key=lambda b: (b.odds, b.ts, b.id))
-    return [(b.id, b.odds, b.amount) for b in bets]
+    #bets = sorted((e[3] for e in bet_queue_lay), key=lambda b: (-b.odds, b.ts, b.id))
+    smallest = heapq.nsmallest(5, bet_queue_lay)
+    return [(b[3].id, b[3].is_back, b[3].odds, b[3].amount) for b in smallest]
 
 
 def get_queue_back() -> list:
     """Back orders, highest odds first (display order)."""
-    bets = sorted((e[3] for e in bet_queue_back), key=lambda b: (-b.odds, b.ts, b.id))
-    return [(b.id, b.odds, b.amount) for b in bets]
+    #bets = sorted((e[3] for e in bet_queue_back), key=lambda b: (-b.odds, b.ts, b.id))
+    biggest = heapq.nlargest(5, bet_queue_back)
+    return [(b[3].id, b[3].is_back, b[3].odds, b[3].amount) for b in biggest]
 
 
 def get_num_matched() -> int:

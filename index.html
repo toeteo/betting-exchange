@@ -6,11 +6,6 @@
         <title>betting exchange</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <style>
-            #queues-div {
-                display: flex;
-                flex-direction: row;
-                gap: 4rem;
-            }
             .queue-div {
                 display: flex;
                 flex-direction: column;
@@ -19,16 +14,10 @@
     </head>
     <body>
         <h1>betting exchange</h1>
-        <p>matched bets so far: <span id="num_matched">0</span></p>
-        <div id="queues-div">
-            <div class="queue-div">
-                <p>lay queue: </p>
-                <div id="lay_queue"></div>
-            </div>
-            <div class="queue-div">
-                <p>back queue: </p>
-                <div id="back_queue"></div>
-            </div>
+        <p>matched bets so far: <span id="num-matched">0</span></p>
+        <div class="queue-div">
+            <p>open bets: </p>
+            <div id="open-bets-list"></div>
         </div>
         <script>
             const wsUrl = `ws://${window.location.host}/ws`;
@@ -37,26 +26,19 @@
             ws.onmessage = (event) => {
                 const data = JSON.parse(event.data);
                 // render num matched
-                document.getElementById("num_matched").textContent = data.num_matched;
+                document.getElementById("num-matched").textContent = data.num_matched;
 
                 // render lay queue
-                const layContainer = document.getElementById("lay_queue");
-                layContainer.replaceChildren(); // clear previous elements
+                const openBetsList = document.getElementById("open-bets-list");
+                openBetsList.replaceChildren(); // clear previous elements
 
-                data.lay_queue.forEach(([id, odds, amount]) => {
+                const complete_queue = data.back_queue.concat(data.lay_queue);
+
+                complete_queue.forEach(([id, is_back, odds, amount]) => {
                     const p = document.createElement("p");
-                    p.textContent = `ID #${id} | Odds: ${odds.toFixed(2)} | Stake: $${amount.toFixed(2)}`;
-                    layContainer.appendChild(p);
-                });
-
-                // render back queue
-                const backContainer = document.getElementById("back_queue");
-                backContainer.replaceChildren(); // clear previous elements
-
-                data.back_queue.forEach(([id, odds, amount]) => {
-                    const p = document.createElement("p");
-                    p.textContent = `ID #${id} | Odds: ${odds.toFixed(2)} | Stake: $${amount.toFixed(2)}`;
-                    backContainer.appendChild(p);
+                    p.textContent = `#${id} | x${odds.toFixed(2)} | $${amount.toFixed(2)}`;
+                    p.style.color = is_back ? "blue" : "green";
+                    openBetsList.appendChild(p);
                 });
             };
 
