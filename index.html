@@ -23,7 +23,6 @@
         <p>matched bets so far: <span id="num-matched">0</span></p>
         <p>fair odds: <span id="fair-odds">0</span></p>
         <div class="chart-container">
-            <!-- 2. The canvas element where the plot renders -->
             <canvas id="liveChart"></canvas>
         </div>
         <div class="queue-div">
@@ -39,18 +38,36 @@
             data: {
                 labels: [],
                 datasets: [{
-                label: 'Market liquidity',
-                data: [],
-                borderColor: '#2563eb',
-                backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                fill: true,
-                tension: 0.2
-                }]
+                        label: 'Market liquidity unmatched',
+                        data: [],
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(20, 20, 200, 0.5)',
+                        fill: true,
+                        tension: 0.2
+                    },
+                    {
+                        label: 'Market liquidity matched',
+                        data: [],
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(200, 20, 20, 0.5)',
+                        fill: true,
+                        tension: 1
+                    }
+                ]
             },
             options: {
                 responsive: true,
                 animation: {
                 duration: 300 // Smooth transition between 1-second ticks
+                },
+                scales: {
+                    x: {
+                        stacked: true // Stacks bars horizontally into single columns
+                    },
+                    y: {
+                        stacked: true, // Stacks heights on top of each other
+                        beginAtZero: true
+                    }
                 }
             }
             });
@@ -63,7 +80,7 @@
                 // render num matched
                 document.getElementById("num-matched").textContent = data.num_matched;
 
-                // render lay queue
+                // render open bets
                 const openBetsList = document.getElementById("open-bets-list");
                 openBetsList.replaceChildren(); // clear previous elements
 
@@ -75,10 +92,13 @@
                     p.style.color = is_back ? "blue" : "green";
                     openBetsList.appendChild(p);
                 });
-
+                
+                // render fair odds
                 document.getElementById("fair-odds").textContent = data.fair_odds;
-
-                chart.data.datasets[0].data = data.liquidity;
+                
+                // update chart
+                chart.data.datasets[0].data = data.liq_um;
+                chart.data.datasets[1].data = data.liq_ma;
                 chart.data.labels = data.odds;
                 chart.update();
             };

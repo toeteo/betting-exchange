@@ -35,14 +35,15 @@ async def websocket_endpoint(websocket: WebSocket):
             lay_queue = get_queue_lay()
             back_queue = get_queue_back()
             fair_odds = get_fair_odds()
-            odds, liquidity = get_liquidity_data()
+            odds, liq_um, liq_ma = get_liquidity_data()
             payload = {
                 "num_matched": num_matched,
                 "lay_queue": lay_queue,
                 "back_queue": back_queue,
                 "fair_odds": fair_odds,
                 "odds": odds,
-                "liquidity": liquidity
+                "liq_um": liq_um,
+                "liq_ma": liq_ma
             }
             await websocket.send_json(payload)
     except WebSocketDisconnect:
