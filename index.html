@@ -5,21 +5,56 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <title>betting exchange</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <style>
             .queue-div {
                 display: flex;
                 flex-direction: column;
+            }
+            .chart-container {
+                width: 600px;
+                max-width: 90%;
+                margin: 40px auto;
             }
         </style>
     </head>
     <body>
         <h1>betting exchange</h1>
         <p>matched bets so far: <span id="num-matched">0</span></p>
+        <p>fair odds: <span id="fair-odds">0</span></p>
+        <div class="chart-container">
+            <!-- 2. The canvas element where the plot renders -->
+            <canvas id="liveChart"></canvas>
+        </div>
         <div class="queue-div">
             <p>open bets: </p>
             <div id="open-bets-list"></div>
         </div>
         <script>
+            const ctx = document.getElementById('liveChart');
+
+            // 1. Initialize once
+            const chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [{
+                label: 'Market liquidity',
+                data: [],
+                borderColor: '#2563eb',
+                backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                fill: true,
+                tension: 0.2
+                }]
+            },
+            options: {
+                responsive: true,
+                animation: {
+                duration: 300 // Smooth transition between 1-second ticks
+                }
+            }
+            });
+
             const wsUrl = `ws://${window.location.host}/ws`;
             const ws = new WebSocket(wsUrl);
 
@@ -40,6 +75,12 @@
                     p.style.color = is_back ? "blue" : "green";
                     openBetsList.appendChild(p);
                 });
+
+                document.getElementById("fair-odds").textContent = data.fair_odds;
+
+                chart.data.datasets[0].data = data.liquidity;
+                chart.data.labels = data.odds;
+                chart.update();
             };
 
             ws.onopen = () => console.log("Connected to stream");

@@ -40,13 +40,46 @@ def get_queue_lay() -> list:
 def get_queue_back() -> list:
     """Back orders, highest odds first (display order)."""
     #bets = sorted((e[3] for e in bet_queue_back), key=lambda b: (-b.odds, b.ts, b.id))
-    biggest = heapq.nlargest(5, bet_queue_back)
-    return [(b[3].id, b[3].is_back, b[3].odds, b[3].amount) for b in biggest]
+    smallest = heapq.nsmallest(5, bet_queue_back)
+    return [(b[3].id, b[3].is_back, b[3].odds, b[3].amount) for b in smallest]
 
 
 def get_num_matched() -> int:
     return len(matched_bets_queue)
 
+
+def get_fair_odds() -> float:
+    if len(bet_queue_back) == 0 or len(bet_queue_lay) == 0:
+        return 0
+    
+    min_back = bet_queue_back[0][3].odds
+    max_lay = bet_queue_lay[0][3].odds
+    fair_odds = round((min_back + max_lay)/2, 2)
+    
+    return fair_odds
+
+def _get_odds_liquidity(odd, q):
+    for b in q:
+        if b[2] == odd:
+            return b[3]
+    return 0
+
+def get_liquidity_data():
+    fair_odds = get_fair_odds()
+    odds = [round((x/100 + fair_odds), 2) for x in range(-5, 6)]
+    
+    bq = get_queue_back()
+    lq = get_queue_lay()
+
+    liquidity = []
+
+    for odd in odds:
+        l = _get_odds_liquidity(odd, lq) if odd <= fair_odds else _get_odds_liquidity(odd, bq)
+        liquidity.append(l)
+
+    liquidity = [l/max(liquidity) if max(liquidity) != 0 else 0 for l in liquidity]
+
+    return odds, liquidity
 
 def receive_bet(ts: float, is_back: bool, amount: float, odds: float) -> float:
     global next_id

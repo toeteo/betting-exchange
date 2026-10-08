@@ -3,7 +3,7 @@ import json
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
-from matcher import get_num_matched, receive_bet, get_queue_lay, get_queue_back
+from matcher import get_num_matched, receive_bet, get_queue_lay, get_queue_back, get_fair_odds, get_liquidity_data
 from time import time
 
 
@@ -34,10 +34,15 @@ async def websocket_endpoint(websocket: WebSocket):
             num_matched = get_num_matched()
             lay_queue = get_queue_lay()
             back_queue = get_queue_back()
+            fair_odds = get_fair_odds()
+            odds, liquidity = get_liquidity_data()
             payload = {
                 "num_matched": num_matched,
                 "lay_queue": lay_queue,
-                "back_queue": back_queue
+                "back_queue": back_queue,
+                "fair_odds": fair_odds,
+                "odds": odds,
+                "liquidity": liquidity
             }
             await websocket.send_json(payload)
     except WebSocketDisconnect:

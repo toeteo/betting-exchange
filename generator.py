@@ -16,8 +16,8 @@ def post_bet(is_back, bet_amount, bet_odds):
 
 def place_bet():
     is_back = bool(randint(0, 1))  # Randomly choose True or False
-    bet_amount = round(uniform(0.2, 20.0), 1) * 5  # Random bet amount between 1 and 100
-    bet_odds = round(uniform(1.0, 5.0), 2)  # Random odds between 1 and 5
+    bet_amount = round(uniform(0.2, 2.0), 1) * 5  # Random bet amount between 1 and 100
+    bet_odds = round(uniform(2.0, 2.2), 2)  # Random odds between 1 and 5
     result = post_bet(is_back, bet_amount, bet_odds)
     print(f"Response: {result}")
 
