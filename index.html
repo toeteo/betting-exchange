@@ -30,46 +30,89 @@
             <div id="open-bets-list"></div>
         </div>
         <script>
+            let fairOdds = 0;
             const ctx = document.getElementById('liveChart');
 
             // 1. Initialize once
+            // Replace with your data (odds ascending, one entry per tick)
+            
+            const fairLine = {
+                id: 'fairLine',
+                afterDatasetsDraw(chart) {
+                    const n = chart.data.labels.length;
+                    if (n < 3) return;
+                    const idx = (n - 1) / 2;
+
+                    const { ctx, chartArea: { top, bottom }, scales: { x } } = chart;
+                    const px = x.getPixelForValue(idx);
+
+                    ctx.save();
+                    ctx.setLineDash([6, 4]);
+                    ctx.strokeStyle = '#222';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(px, top);
+                    ctx.lineTo(px, bottom);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    ctx.fillStyle = '#222';
+                    ctx.restore();
+                }
+            }
+
             const chart = new Chart(ctx, {
-            type: 'bar',
+            type: 'line',
             data: {
                 labels: [],
-                datasets: [{
-                        label: 'Market liquidity unmatched',
-                        data: [],
-                        borderColor: '#2563eb',
-                        backgroundColor: 'rgba(20, 20, 200, 0.5)',
-                        fill: true,
-                        tension: 0.2
-                    },
-                    {
-                        label: 'Market liquidity matched',
-                        data: [],
-                        borderColor: '#2563eb',
-                        backgroundColor: 'rgba(200, 20, 20, 0.5)',
-                        fill: true,
-                        tension: 1
-                    }
-                ]
+                datasets: [
+                {
+                    label: 'unmatched',
+                    data: [],
+                    stepped: 'middle',
+                    fill: 'origin',
+                    borderColor: 'rgb(54, 162, 235)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    borderWidth: 1.5,
+                    pointRadius: 0,
+                },
+                {
+                    label: 'matched',
+                    data: [],
+                    stepped: 'middle',
+                    fill: 'origin',
+                    borderColor: 'rgb(255, 159, 64)',
+                    backgroundColor: 'rgba(255, 159, 64, 0.6)',
+                    borderWidth: 1.5,
+                    pointRadius: 0,
+                },
+                ],
             },
             options: {
                 responsive: true,
+                layout: { padding: { top: 20 } },
+                interaction: { mode: 'index', intersect: false },
                 animation: {
-                duration: 300 // Smooth transition between 1-second ticks
+                    duration: 100
                 },
                 scales: {
-                    x: {
-                        stacked: true // Stacks bars horizontally into single columns
+                x: { title: { display: true, text: 'Odds' } },
+                y: {
+                    min: -1,
+                    max: 1,
+                    title: { display: true, text: 'Liquidity (▲ matched / ▼ unmatched)' },
+                    ticks: { callback: v => Math.abs(v).toLocaleString() },
+                    grid: { color: ctx => ctx.tick.value === 0 ? '#000' : 'rgba(0,0,0,0.1)' },
+                },
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                        label: c => `${c.dataset.label}: ${Math.abs(c.parsed.y).toLocaleString()}`,
+                        },
                     },
-                    y: {
-                        stacked: true, // Stacks heights on top of each other
-                        beginAtZero: true
-                    }
-                }
-            }
+                },
+            },
+            plugins: [fairLine]
             });
 
             const wsUrl = `ws://${window.location.host}/ws`;
@@ -94,11 +137,12 @@
                 });
                 
                 // render fair odds
+                fairOdds = data.fair_odds;
                 document.getElementById("fair-odds").textContent = data.fair_odds;
                 
                 // update chart
                 chart.data.datasets[0].data = data.liq_um;
-                chart.data.datasets[1].data = data.liq_ma;
+                chart.data.datasets[1].data = data.liq_ma.map((v) => -v);
                 chart.data.labels = data.odds;
                 chart.update();
             };

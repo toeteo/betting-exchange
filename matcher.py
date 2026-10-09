@@ -67,10 +67,11 @@ def _get_odds_liquidity_from_matched(odd):
 
 
 def _get_odds_liquidity_from_queue(odd, q):
+    odd_liq = 0
     for b in q:
         if b[2] == odd:
-            return b[3]
-    return 0
+            odd_liq += b[3]
+    return odd_liq
 
 
 def get_liquidity_data(span:int=5):
@@ -94,15 +95,14 @@ def get_liquidity_data(span:int=5):
         l = _get_odds_liquidity_from_queue(odd, lq) if odd <= fair_odds else _get_odds_liquidity_from_queue(odd, bq)
         liq_per_odd_um.append(l)
 
-    if max(liq_per_odd_um) != 0:
-        # normalize liquidity to [0,1]
-        liq_per_odd_um = [l/max(liq_per_odd_um) for l in liq_per_odd_um]
-    
-
     liq_per_odd_ma = [_get_odds_liquidity_from_matched(o) for o in odds_range]
 
-    if max(liq_per_odd_ma) != 0:
-        liq_per_odd_ma = [l/max(liq_per_odd_ma) for l in liq_per_odd_ma]
+    norm_term = max(max(liq_per_odd_um), max(liq_per_odd_ma));
+    
+    if  norm_term != 0:
+        # normalize liquidity to [0,1]
+        liq_per_odd_um = [l/norm_term for l in liq_per_odd_um]
+        liq_per_odd_ma = [l/norm_term for l in liq_per_odd_ma]
 
     return odds_range, liq_per_odd_um, liq_per_odd_ma
 
