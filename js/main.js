@@ -41,7 +41,7 @@ data: {
         stepped: 'middle',
         fill: 'origin',
         borderColor: 'rgba(0, 0, 128, 0)',
-        backgroundColor: 'rgba(0, 128, 128, 0.3)',
+        backgroundColor: 'rgba(255, 255, 255, 0.7)',
         borderWidth: 1.5,
         pointRadius: 0,
         color: 'white'
@@ -52,7 +52,7 @@ data: {
         stepped: 'middle',
         fill: 'origin',
         borderColor: 'rgba(255, 159, 64, 0)',
-        backgroundColor: 'rgba(128, 128, 0, 0.3)',
+        backgroundColor: 'rgba(0, 255, 0, 0.7)',
         borderWidth: 1.5,
         pointRadius: 0,
         color: 'white'
@@ -68,7 +68,7 @@ options: {
         duration: 100
     },
     scales: {
-    x: { title: { display: true, text: 'Odds', color: 'white' } ,
+    x: { title: { display: true, text: 'lay ◀ odds ▶ back', color: 'white' , font: {size: 14} },
         grid: {color: 'rgba(255, 255, 255, 0.1)' },
         border: {display: false },
         display: true,
@@ -76,7 +76,7 @@ options: {
     y: {
         min: -1,
         max: 1,
-        title: { display: true, text: 'Liquidity (▲ unmatched / ▼ matched)', color: 'white' },
+        title: { display: true, text: 'liquidity', color: 'white', font: {size: 14} },
         ticks: { callback: v => Math.abs(v).toLocaleString(), color: 'white' },
         grid: {color: 'rgba(255, 255, 255, 0.1)' },
         border: { display: false },

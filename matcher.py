@@ -73,13 +73,35 @@ def _get_odds_liquidity_from_queue(odd, q):
             odd_liq += b[3]
     return odd_liq
 
+def _get_highest_liquidity_odd():
+    odds_liq = {}
+    for m in matched_bets_queue:
+        if m[3] not in odds_liq:
+            odds_liq[m[3]] = 0
+        odds_liq[m[3]] += m[2]
+    if len(odds_liq) == 0:
+        return None
+    best_odd = max(odds_liq.items(), key=lambda x: x[1])[0]
+    return best_odd
+
+def _get_alternative_odd():
+    if len(bet_queue_lay) >= 1:
+        return abs(bet_queue_lay[0][0])
+    if len(bet_queue_back) >= 1:
+        return abs(bet_queue_back[0][0])
+    if len(matched_bets_queue) >= 1:
+        if _get_highest_liquidity_odd() is not None:
+            return _get_highest_liquidity_odd()
+    return 0
 
 def get_liquidity_data(span:int=5):
     # ex: fair_odds=2 span=2 odds_range=[1.98,1.99,2,2.01,2.02]
     # ex: liq_per_odd_um=[0, 1, 0, 0.5, 0] liq_per_odd_ma=...
     fair_odds = get_fair_odds()
     if fair_odds == 0:
-        return [0], [0], [0]
+        fair_odds = _get_alternative_odd()
+        if fair_odds == 0:
+            return [0], [0], [0]
 
     odds_range = [round((x/100 + fair_odds), 2) for x in range(-span, span+1)]
 
