@@ -11,6 +11,8 @@ from time import time
 app = FastAPI()
 
 app.mount("/images", StaticFiles(directory="images"), name="images")
+app.mount("/js", StaticFiles(directory="js"), name="js")
+app.mount("/css", StaticFiles(directory="css"), name="css")
 
 class BetRequest(BaseModel):
     is_back: bool # True for BACK, False for LAY
@@ -35,8 +37,8 @@ async def websocket_endpoint(websocket: WebSocket):
             # push an update every second
             await asyncio.sleep(0.1)
             num_matched = get_num_matched()
-            lay_queue = get_queue_lay()
-            back_queue = get_queue_back()
+            lay_queue = get_queue_lay(1)
+            back_queue = get_queue_back(1)
             fair_odds = get_fair_odds()
             odds, liq_um, liq_ma = get_liquidity_data()
             payload = {

@@ -1,0 +1,25 @@
+.queue-div {
+    display: flex;
+    flex-direction: column;
+}
+.chart-container {
+    width: 600px;
+    max-width: 90%;
+    margin: 40px auto;
+}
+.crop-container {
+    width: 200px;       /* Set your target width */
+    height: 100px;      /* Set your target height */
+    overflow: hidden;   /* Cut off anything that overflows the box */
+}
+
+.crop-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;     /* Fits and crops the image without stretching */
+    object-position: center; /* Focuses on the center (can use top, bottom, etc.) */
+}
+
+p {
+    color: white;
+}
