@@ -2,12 +2,15 @@ import asyncio
 import json
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from matcher import get_num_matched, receive_bet, get_queue_lay, get_queue_back, get_fair_odds, get_liquidity_data
 from time import time
 
 
 app = FastAPI()
+
+app.mount("/images", StaticFiles(directory="images"), name="images")
 
 class BetRequest(BaseModel):
     is_back: bool # True for BACK, False for LAY
@@ -30,7 +33,7 @@ async def websocket_endpoint(websocket: WebSocket):
     try:
         while True:
             # push an update every second
-            await asyncio.sleep(1)
+            await asyncio.sleep(0.1)
             num_matched = get_num_matched()
             lay_queue = get_queue_lay()
             back_queue = get_queue_back()

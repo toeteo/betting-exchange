@@ -6,6 +6,10 @@
         <title>betting exchange</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"
+        >
         <style>
             .queue-div {
                 display: flex;
@@ -16,17 +20,35 @@
                 max-width: 90%;
                 margin: 40px auto;
             }
+            .crop-container {
+                width: 200px;       /* Set your target width */
+                height: 100px;      /* Set your target height */
+                overflow: hidden;   /* Cut off anything that overflows the box */
+            }
+
+            .crop-container img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;     /* Fits and crops the image without stretching */
+                object-position: center; /* Focuses on the center (can use top, bottom, etc.) */
+            }
+
+            p {
+                color: white;
+            }
         </style>
     </head>
     <body>
-        <h1>betting exchange</h1>
+        <div class="crop-container">
+            <img src="/images/logo.png" alt="logo">
+        </div>
         <p>matched bets so far: <span id="num-matched">0</span></p>
         <p>fair odds: <span id="fair-odds">0</span></p>
         <div class="chart-container">
             <canvas id="liveChart"></canvas>
         </div>
         <div class="queue-div">
-            <p>open bets: </p>
+            <p>open bets (max 5 each): </p>
             <div id="open-bets-list"></div>
         </div>
         <script>
@@ -48,17 +70,19 @@
 
                     ctx.save();
                     ctx.setLineDash([6, 4]);
-                    ctx.strokeStyle = '#222';
+                    ctx.strokeStyle = 'white';
                     ctx.lineWidth = 1;
                     ctx.beginPath();
                     ctx.moveTo(px, top);
                     ctx.lineTo(px, bottom);
                     ctx.stroke();
                     ctx.setLineDash([]);
-                    ctx.fillStyle = '#222';
+                    ctx.fillStyle = 'white';
                     ctx.restore();
                 }
             }
+            
+            Chart.defaults.color = 'white';
 
             const chart = new Chart(ctx, {
             type: 'line',
@@ -70,24 +94,27 @@
                     data: [],
                     stepped: 'middle',
                     fill: 'origin',
-                    borderColor: 'rgb(54, 162, 235)',
-                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    borderColor: 'rgba(0, 0, 128, 0)',
+                    backgroundColor: 'rgba(0, 128, 128, 0.3)',
                     borderWidth: 1.5,
                     pointRadius: 0,
+                    color: 'white'
                 },
                 {
                     label: 'matched',
                     data: [],
                     stepped: 'middle',
                     fill: 'origin',
-                    borderColor: 'rgb(255, 159, 64)',
-                    backgroundColor: 'rgba(255, 159, 64, 0.6)',
+                    borderColor: 'rgba(255, 159, 64, 0)',
+                    backgroundColor: 'rgba(128, 128, 0, 0.3)',
                     borderWidth: 1.5,
                     pointRadius: 0,
+                    color: 'white'
                 },
                 ],
             },
             options: {
+                color: 'white',
                 responsive: true,
                 layout: { padding: { top: 20 } },
                 interaction: { mode: 'index', intersect: false },
@@ -95,20 +122,27 @@
                     duration: 100
                 },
                 scales: {
-                x: { title: { display: true, text: 'Odds' } },
+                x: { title: { display: true, text: 'Odds', color: 'white' } ,
+                    grid: {color: 'rgba(255, 255, 255, 0.1)' },
+                    border: {display: false },
+                    display: true,
+                },
                 y: {
                     min: -1,
                     max: 1,
-                    title: { display: true, text: 'Liquidity (▲ matched / ▼ unmatched)' },
-                    ticks: { callback: v => Math.abs(v).toLocaleString() },
-                    grid: { color: ctx => ctx.tick.value === 0 ? '#000' : 'rgba(0,0,0,0.1)' },
+                    title: { display: true, text: 'Liquidity (▲ unmatched / ▼ matched)', color: 'white' },
+                    ticks: { callback: v => Math.abs(v).toLocaleString(), color: 'white' },
+                    grid: {color: 'rgba(255, 255, 255, 0.1)' },
+                    border: { display: false },
                 },
                 },
                 plugins: {
                     tooltip: {
                         callbacks: {
                         label: c => `${c.dataset.label}: ${Math.abs(c.parsed.y).toLocaleString()}`,
+                        color: 'white'
                         },
+                        color: 'white',
                     },
                 },
             },
