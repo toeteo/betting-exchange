@@ -16,8 +16,18 @@
         <div class="crop-container">
             <img src="/images/logo.png" alt="logo">
         </div>
-        <div class="chart-container">
-            <canvas id="liveChart"></canvas>
+        <div class="row-div", style="padding-inline: 20px;">
+            <div class="chart-container">
+                <canvas id="liveChart"></canvas>
+            </div>
+            <div class="column-div", style="justify-content: center; gap: 20px;">
+                <div>
+                    <input style="accent-color: rgba(0, 255, 0, 0.7);" type="checkbox" name="is_back" id="">
+                    <label for="is_back">back bet</label>
+                </div>
+                <input type="number" name="" id="">
+                <button style="background-color: rgba(0, 255, 0, 0.7);">bet</button>
+            </div>
         </div>
         <p>matched bets so far: <span id="num-matched">0</span></p>
         <p>fair odds: <span id="fair-odds">0</span></p>

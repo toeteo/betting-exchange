@@ -23,3 +23,13 @@
 p {
     color: white;
 }
+
+.row-div {
+    display: flex;
+    flex-direction: row;
+}
+
+.column-div {
+    display: flex;
+    flex-direction: column;
+}
