@@ -1,4 +1,11 @@
 let fairOdds = 0;
+let oddsInitialized = false;
+
+const oddsInput = document.getElementById("oddsInput");
+const amountInput = document.getElementById("amountInput");
+const backRadio = document.getElementById("backRadio");
+const liabilitySpan = document.getElementById("liabilitySpan");
+
 const ctx = document.getElementById('liveChart');
 
 // 1. Initialize once
@@ -106,6 +113,26 @@ options: {
 plugins: [fairLine]
 });
 
+function updateLiability () {
+    let odds = oddsInput.value;
+    let stake = amountInput.value;
+
+    if (odds == '' || stake == '') return;
+    
+    let l = 0
+    
+    if (!backRadio.checked) {
+        // lay bet
+        l = (odds - 1) * stake;
+    }
+    else {
+        // back bet
+        l = stake;
+    }
+
+    liabilitySpan.textContent = l;
+}
+
 const betForm = document.getElementById('betForm');
 
 betForm.addEventListener('submit', async (event) => {
@@ -139,6 +166,8 @@ betForm.addEventListener('submit', async (event) => {
 
     const data = await response.json();
     console.log('Server response:', data);
+    amountInput.value = '';
+    oddsInitialized = false;
   } catch (error) {
     console.error('Error submitting bet:', error);
   }
@@ -175,6 +204,10 @@ ws.onmessage = (event) => {
     chart.data.datasets[2].data = data.liq_ma.map((v) => -v);
     chart.data.labels = data.odds;
     chart.update();
+
+    if (!oddsInitialized) {
+        oddsInput.value = fairOdds;
+    }
 };
 
 ws.onopen = () => console.log("Connected to stream");
