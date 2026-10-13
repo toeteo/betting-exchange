@@ -41,7 +41,7 @@ data: {
         stepped: 'middle',
         fill: 'origin',
         borderColor: 'rgba(0, 0, 128, 0)',
-        backgroundColor: 'rgba(128, 64, 0, 0.7)',
+        backgroundColor: 'rgba(228, 116, 0, 0.7)',
         borderWidth: 1.5,
         pointRadius: 0,
         color: 'white'
@@ -52,7 +52,7 @@ data: {
         stepped: 'middle',
         fill: 'origin',
         borderColor: 'rgba(0, 0, 128, 0)',
-        backgroundColor: 'rgba(0, 64, 128, 0.7)',
+        backgroundColor: 'rgba(0, 116, 228, 0.7)',
         borderWidth: 1.5,
         pointRadius: 0,
         color: 'white'
@@ -63,7 +63,7 @@ data: {
         stepped: 'middle',
         fill: 'origin',
         borderColor: 'rgba(255, 159, 64, 0)',
-        backgroundColor: 'rgba(0, 255, 0, 0.7)',
+        backgroundColor: 'rgba(255, 255, 255, 0.7)',
         borderWidth: 1.5,
         pointRadius: 0,
         color: 'white'
