@@ -101,7 +101,7 @@ def get_liquidity_data(span:int=5):
     if fair_odds == 0:
         fair_odds = _get_alternative_odd()
         if fair_odds == 0:
-            return [0], [0], [0]
+            return [0], [0], [0], [0]
 
     odds_range = [round((x/100 + fair_odds), 2) for x in range(-span, span+1)]
 
@@ -110,23 +110,29 @@ def get_liquidity_data(span:int=5):
     lq = get_queue_lay(span)
     
     # for each odd in the range get the corresponding liquidity
-    liq_per_odd_um = []
+    liq_per_odd_um_back = [0 for odd in odds_range]
+    liq_per_odd_um_lay = [0 for odd in odds_range]
 
-    for odd in odds_range:
+    for i, odd in enumerate(odds_range):
         # get liquidity from either back or lay queue
-        l = _get_odds_liquidity_from_queue(odd, lq) if odd <= fair_odds else _get_odds_liquidity_from_queue(odd, bq)
-        liq_per_odd_um.append(l)
+        if odd <= fair_odds:
+            l = _get_odds_liquidity_from_queue(odd, lq)
+            liq_per_odd_um_lay[i] = l
+        if odd >= fair_odds:
+            l =_get_odds_liquidity_from_queue(odd, bq)
+            liq_per_odd_um_back[i] = l
 
     liq_per_odd_ma = [_get_odds_liquidity_from_matched(o) for o in odds_range]
 
-    norm_term = max(max(liq_per_odd_um), max(liq_per_odd_ma));
+    norm_term = max(max(liq_per_odd_um_lay), max(liq_per_odd_um_lay), max(liq_per_odd_ma));
     
     if  norm_term != 0:
         # normalize liquidity to [0,1]
-        liq_per_odd_um = [l/norm_term for l in liq_per_odd_um]
+        liq_per_odd_um_lay = [l/norm_term for l in liq_per_odd_um_lay]
+        liq_per_odd_um_back = [l/norm_term for l in liq_per_odd_um_back]
         liq_per_odd_ma = [l/norm_term for l in liq_per_odd_ma]
 
-    return odds_range, liq_per_odd_um, liq_per_odd_ma
+    return odds_range, liq_per_odd_um_lay, liq_per_odd_um_back, liq_per_odd_ma
 
 
 def receive_bet(ts: float, is_back: bool, amount: float, odds: float) -> float:

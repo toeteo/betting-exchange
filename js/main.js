@@ -36,12 +36,23 @@ data: {
     labels: [],
     datasets: [
     {
-        label: 'unmatched',
+        label: 'lay',
         data: [],
         stepped: 'middle',
         fill: 'origin',
         borderColor: 'rgba(0, 0, 128, 0)',
-        backgroundColor: 'rgba(255, 255, 255, 0.7)',
+        backgroundColor: 'rgba(128, 64, 0, 0.7)',
+        borderWidth: 1.5,
+        pointRadius: 0,
+        color: 'white'
+    },
+    {
+        label: 'back',
+        data: [],
+        stepped: 'middle',
+        fill: 'origin',
+        borderColor: 'rgba(0, 0, 128, 0)',
+        backgroundColor: 'rgba(0, 64, 128, 0.7)',
         borderWidth: 1.5,
         pointRadius: 0,
         color: 'white'
@@ -95,6 +106,44 @@ options: {
 plugins: [fairLine]
 });
 
+const betForm = document.getElementById('betForm');
+
+betForm.addEventListener('submit', async (event) => {
+  event.preventDefault(); // Prevents URL-encoded query params and page refresh
+
+  // 1. Gather inputs and parse types
+  const isBack = document.getElementById('backRadio').checked;
+  const betAmount = parseFloat(document.getElementById('amountInput').value);
+  const betOdds = parseFloat(document.getElementById('oddsInput').value);
+
+  // 2. Shape payload matching your exact types
+  const payload = {
+    is_back: isBack,        // boolean: true / false
+    bet_amount: betAmount,  // float
+    bet_odds: betOdds       // float
+  };
+
+  // 3. Send payload purely inside the request body
+  try {
+    const response = await fetch('/bet', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload) // Data goes in body, nothing in the URL
+    });
+
+    if (!response.ok) {
+      throw new Error(`Server returned ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('Server response:', data);
+  } catch (error) {
+    console.error('Error submitting bet:', error);
+  }
+});
+
 const wsUrl = `ws://${window.location.host}/ws`;
 const ws = new WebSocket(wsUrl);
 
@@ -121,8 +170,9 @@ ws.onmessage = (event) => {
     document.getElementById("fair-odds").textContent = data.fair_odds;
     
     // update chart
-    chart.data.datasets[0].data = data.liq_um;
-    chart.data.datasets[1].data = data.liq_ma.map((v) => -v);
+    chart.data.datasets[0].data = data.liq_um_lay;
+    chart.data.datasets[1].data = data.liq_um_back;
+    chart.data.datasets[2].data = data.liq_ma.map((v) => -v);
     chart.data.labels = data.odds;
     chart.update();
 };
