@@ -207,6 +207,7 @@ ws.onmessage = (event) => {
 
     if (!oddsInitialized) {
         oddsInput.value = fairOdds;
+        oddsInitialized = true;
     }
 };
 
