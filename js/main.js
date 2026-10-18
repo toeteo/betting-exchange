@@ -113,14 +113,12 @@ options: {
 plugins: [fairLine]
 });
 
-function updateLiability () {
-    let odds = oddsInput.value;
-    let stake = amountInput.value;
+function _getLiabilityValue (odds, stake) {
+    if (odds == '' || stake == '') return 0;
+    if (odds < 1) return 0;
 
-    if (odds == '' || stake == '') return;
-    
-    let l = 0
-    
+    let l = 0;
+
     if (!backRadio.checked) {
         // lay bet
         l = (odds - 1) * stake;
@@ -129,6 +127,14 @@ function updateLiability () {
         // back bet
         l = stake;
     }
+
+    return l;
+}
+
+function updateLiability () {
+    let odds = oddsInput.value;
+    let stake = amountInput.value;
+    let l = _getLiabilityValue(odds, stake);
 
     liabilitySpan.textContent = l;
 }
