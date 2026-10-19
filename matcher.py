@@ -134,15 +134,16 @@ def get_liquidity_data(span:int=5):
 
     liq_per_odd_ma = [_get_odds_liquidity_from_matched(o) for o in odds_range]
 
-    norm_term = max(max(liq_per_odd_um_lay), max(liq_per_odd_um_lay), max(liq_per_odd_ma));
+    return odds_range, liq_per_odd_um_lay, liq_per_odd_um_back, liq_per_odd_ma
+
+"""     norm_term = max(max(liq_per_odd_um_lay), max(liq_per_odd_um_lay), max(liq_per_odd_ma));
     
     if  norm_term != 0:
         # normalize liquidity to [0,1]
         liq_per_odd_um_lay = [l/norm_term for l in liq_per_odd_um_lay]
         liq_per_odd_um_back = [l/norm_term for l in liq_per_odd_um_back]
-        liq_per_odd_ma = [l/norm_term for l in liq_per_odd_ma]
+        liq_per_odd_ma = [l/norm_term for l in liq_per_odd_ma] """
 
-    return odds_range, liq_per_odd_um_lay, liq_per_odd_um_back, liq_per_odd_ma
 
 
 def receive_bet(ts: float, is_back: bool, amount: float, odds: float) -> float:

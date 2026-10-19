@@ -92,8 +92,15 @@ options: {
         display: true,
     },
     y: {
-        min: -1,
-        max: 1,
+        // Intercept the data limits before the chart generates ticks
+        afterDataLimits: (scale) => {
+            // Find the absolute largest value in your current data
+            const maxLimit = Math.max(Math.abs(scale.max), Math.abs(scale.min));
+            
+            // Force the scale to be perfectly symmetrical around 0
+            scale.max = maxLimit;
+            scale.min = -maxLimit;
+        },
         title: { display: true, text: 'liquidity', color: 'white', font: {size: 14} },
         ticks: { callback: v => Math.abs(v).toLocaleString(), color: 'white' },
         grid: {color: 'rgba(255, 255, 255, 0.1)' },
@@ -114,7 +121,7 @@ plugins: [fairLine]
 });
 
 function _getLiabilityValue (odds, stake) {
-    if (odds == '' || stake == '') return 0;
+    if (isNaN(odds) || isNaN(stake)) return 0;
     if (odds < 1) return 0;
 
     let l = 0;
@@ -133,14 +140,15 @@ function _getLiabilityValue (odds, stake) {
 
 function updateRecommendedOdds() {
     oddsInitialized = false;
+    updateLiability();
 }
 
 function updateLiability () {
-    let odds = oddsInput.value;
-    let stake = amountInput.value;
+    let odds = parseFloat(oddsInput.value);
+    let stake = parseFloat(amountInput.value);
     let l = _getLiabilityValue(odds, stake);
 
-    liabilitySpan.textContent = l;
+    liabilitySpan.textContent = l.toFixed(2);
 }
 
 const betForm = document.getElementById('betForm');
