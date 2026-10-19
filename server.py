@@ -37,14 +37,16 @@ async def websocket_endpoint(websocket: WebSocket):
             # push an update every second
             await asyncio.sleep(0.1)
             num_matched = get_num_matched()
-            lay_queue = get_queue_lay(1)
-            back_queue = get_queue_back(1)
+            max_lay = get_queue_lay(1)
+            max_lay = max_lay[0][2] if len(max_lay) != 0 else 0
+            min_back = get_queue_back(1)
+            min_back = min_back[0][2] if len(min_back) != 0 else 0
             fair_odds = get_fair_odds()
             odds, liq_um_lay, liq_um_back, liq_ma = get_liquidity_data()
             payload = {
                 "num_matched": num_matched,
-                "lay_queue": lay_queue,
-                "back_queue": back_queue,
+                "max_lay": max_lay,
+                "min_back": min_back,
                 "fair_odds": fair_odds,
                 "odds": odds,
                 "liq_um_lay": liq_um_lay,

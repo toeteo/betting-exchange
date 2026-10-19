@@ -23,10 +23,10 @@
             <form id="betForm" style="height: fit-content; justify-content: center;">
             <div class="column-div" style="justify-content: center; gap: 20px; margin: 0;">
                 <div class="segmented-control">
-                <input oninput="updateLiability()" type="radio" name="bet-type" id="backRadio" value="back" checked>
+                <input oninput="updateLiability()" onclick="updateRecommendedOdds()" type="radio" name="bet-type" id="backRadio" value="back" checked>
                 <label for="backRadio">back</label>
 
-                <input oninput="updateLiability()" type="radio" name="bet-type" id="layRadio" value="lay">
+                <input oninput="updateLiability()" onclick="updateRecommendedOdds()" type="radio" name="bet-type" id="layRadio" value="lay">
                 <label for="layRadio">lay</label>
                 </div>
 

@@ -33,12 +33,16 @@ def reset():
 def get_queue_lay(n:int=5) -> list:
     """Lay orders, lowest odds first (display order)."""
     #bets = sorted((e for e in bet_queue_lay), key=lambda b: (-b.odds, b.ts, b.id))
+    if n<1:
+        return []
     bets = heapq.nsmallest(n, bet_queue_lay)
     return [(b[3].id, b[3].is_back, b[3].odds, b[3].amount) for b in bets]
 
 
 def get_queue_back(n:int=5) -> list:
     """Back orders, highest odds first (display order)."""
+    if n<1:
+        return []
     bets = heapq.nsmallest(n, bet_queue_back)
     return [(b[3].id, b[3].is_back, b[3].odds, b[3].amount) for b in bets]
 
@@ -48,6 +52,7 @@ def get_num_matched() -> int:
 
 
 def get_fair_odds() -> float:
+    # TODO instead of fair odds put max lay and min back
     if len(bet_queue_back) == 0 or len(bet_queue_lay) == 0:
         return 0
     

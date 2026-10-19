@@ -131,6 +131,10 @@ function _getLiabilityValue (odds, stake) {
     return l;
 }
 
+function updateRecommendedOdds() {
+    oddsInitialized = false;
+}
+
 function updateLiability () {
     let odds = oddsInput.value;
     let stake = amountInput.value;
@@ -174,6 +178,7 @@ betForm.addEventListener('submit', async (event) => {
     console.log('Server response:', data);
     amountInput.value = '';
     oddsInitialized = false;
+    updateLiability();
   } catch (error) {
     console.error('Error submitting bet:', error);
   }
@@ -212,8 +217,21 @@ ws.onmessage = (event) => {
     chart.update();
 
     if (!oddsInitialized) {
-        oddsInput.value = fairOdds;
+        
+        if (backRadio.checked) {
+            // back
+            if (data.max_lay != 0) {
+                oddsInput.value = data.max_lay;
+            }
+        }
+        else {
+            // lay
+            if (data.min_back != 0) {
+                oddsInput.value = data.min_back;
+            }
+        }
         oddsInitialized = true;
+        
     }
 };
 
