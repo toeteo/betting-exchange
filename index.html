@@ -5,11 +5,12 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <title>betting exchange</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <link
             rel="stylesheet"
             href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"
         >
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
         <link rel="stylesheet" href="/css/style.css">
     </head>
     <body>
@@ -23,10 +24,10 @@
             <form id="betForm" style="height: fit-content; justify-content: center;">
             <div class="column-div" style="justify-content: center; gap: 20px; margin: 0;">
                 <div class="segmented-control">
-                <input oninput="updateLiability()" onclick="updateRecommendedOdds()" type="radio" name="bet-type" id="backRadio" value="back" checked>
+                <input onclick="onBetTypeChanged()" type="radio" name="bet-type" id="backRadio" value="back" checked>
                 <label for="backRadio">back</label>
 
-                <input oninput="updateLiability()" onclick="updateRecommendedOdds()" type="radio" name="bet-type" id="layRadio" value="lay">
+                <input onclick="onBetTypeChanged()" type="radio" name="bet-type" id="layRadio" value="lay">
                 <label for="layRadio">lay</label>
                 </div>
 

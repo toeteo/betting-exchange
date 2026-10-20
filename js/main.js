@@ -1,16 +1,23 @@
+// variables
 let fairOdds = 0;
 let oddsInitialized = false;
 
+// websockets
+const wsUrl = `ws://${window.location.host}/ws`;
+const ws = new WebSocket(wsUrl);
+
+// dom elements
 const oddsInput = document.getElementById("oddsInput");
 const amountInput = document.getElementById("amountInput");
 const backRadio = document.getElementById("backRadio");
 const liabilitySpan = document.getElementById("liabilitySpan");
 
+const betForm = document.getElementById('betForm');
+
 const ctx = document.getElementById('liveChart');
 
-// 1. Initialize once
-// Replace with your data (odds ascending, one entry per tick)
 
+// fair odds line
 const fairLine = {
     id: 'fairLine',
     afterDatasetsDraw(chart) {
@@ -35,6 +42,8 @@ const fairLine = {
     }
 }
 
+
+// chart initialization
 Chart.defaults.color = 'white';
 
 const chart = new Chart(ctx, {
@@ -120,6 +129,7 @@ options: {
 plugins: [fairLine]
 });
 
+
 function _getLiabilityValue (odds, stake) {
     if (isNaN(odds) || isNaN(stake)) return 0;
     if (odds < 1) return 0;
@@ -138,44 +148,45 @@ function _getLiabilityValue (odds, stake) {
     return l;
 }
 
-function updateRecommendedOdds() {
-    oddsInitialized = false;
-    updateLiability();
-}
 
 function updateLiability () {
+    // calculate liability after odds change
     let odds = parseFloat(oddsInput.value);
     let stake = parseFloat(amountInput.value);
     let l = _getLiabilityValue(odds, stake);
-
+    
     liabilitySpan.textContent = l.toFixed(2);
 }
 
-const betForm = document.getElementById('betForm');
+
+function onBetTypeChanged() {
+    oddsInitialized = false;
+}
+
 
 betForm.addEventListener('submit', async (event) => {
-  event.preventDefault(); // Prevents URL-encoded query params and page refresh
+  event.preventDefault();
 
-  // 1. Gather inputs and parse types
+  // gather input
   const isBack = document.getElementById('backRadio').checked;
   const betAmount = parseFloat(document.getElementById('amountInput').value);
   const betOdds = parseFloat(document.getElementById('oddsInput').value);
 
-  // 2. Shape payload matching your exact types
+  // create payload
   const payload = {
     is_back: isBack,        // boolean: true / false
     bet_amount: betAmount,  // float
     bet_odds: betOdds       // float
   };
 
-  // 3. Send payload purely inside the request body
+  // send payload
   try {
     const response = await fetch('/bet', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(payload) // Data goes in body, nothing in the URL
+      body: JSON.stringify(payload)
     });
 
     if (!response.ok) {
@@ -184,35 +195,23 @@ betForm.addEventListener('submit', async (event) => {
 
     const data = await response.json();
     console.log('Server response:', data);
+
+    // reset form
     amountInput.value = '';
     oddsInitialized = false;
-    updateLiability();
+
   } catch (error) {
     console.error('Error submitting bet:', error);
   }
 });
 
-const wsUrl = `ws://${window.location.host}/ws`;
-const ws = new WebSocket(wsUrl);
-
+// websocket
 ws.onmessage = (event) => {
     const data = JSON.parse(event.data);
+
     // render num matched
     document.getElementById("num-matched").textContent = data.num_matched;
 
-    // render open bets
-/*                 const openBetsList = document.getElementById("open-bets-list");
-    openBetsList.replaceChildren(); // clear previous elements
-
-    const complete_queue = data.back_queue.concat(data.lay_queue);
-
-    complete_queue.forEach(([id, is_back, odds, amount]) => {
-        const p = document.createElement("p");
-        p.textContent = `#${id} | x${odds.toFixed(2)} | $${amount.toFixed(2)}`;
-        p.style.color = is_back ? "blue" : "green";
-        openBetsList.appendChild(p);
-    }); */
-    
     // render fair odds
     fairOdds = data.fair_odds;
     document.getElementById("fair-odds").textContent = data.fair_odds;
@@ -224,6 +223,7 @@ ws.onmessage = (event) => {
     chart.data.labels = data.odds;
     chart.update();
 
+    // update recommended odds
     if (!oddsInitialized) {
         
         if (backRadio.checked) {
@@ -238,8 +238,9 @@ ws.onmessage = (event) => {
                 oddsInput.value = data.min_back;
             }
         }
+
         oddsInitialized = true;
-        
+        updateLiability();
     }
 };
 
