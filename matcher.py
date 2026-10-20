@@ -5,7 +5,9 @@ EPS = 1e-9
 
 
 class Bet:
-    def __init__(self, bet_id: int, ts: float, is_back: bool, odds: float, amount: float):
+    def __init__(
+        self, bet_id: int, ts: float, is_back: bool, odds: float, amount: float
+    ):
         self.id = bet_id
         self.ts = ts
         self.is_back = is_back
@@ -30,18 +32,17 @@ def reset():
     next_id = 1
 
 
-def get_queue_lay(n:int=5) -> list:
-    """Lay orders, lowest odds first (display order)."""
-    #bets = sorted((e for e in bet_queue_lay), key=lambda b: (-b.odds, b.ts, b.id))
-    if n<1:
+def get_queue_lay(n: int = 5) -> list:
+    """Lay orders, highest odds first (display order)."""
+    if n < 1:
         return []
     bets = heapq.nsmallest(n, bet_queue_lay)
     return [(b[3].id, b[3].is_back, b[3].odds, b[3].amount) for b in bets]
 
 
-def get_queue_back(n:int=5) -> list:
-    """Back orders, highest odds first (display order)."""
-    if n<1:
+def get_queue_back(n: int = 5) -> list:
+    """Back orders, lowest odds first (display order)."""
+    if n < 1:
         return []
     bets = heapq.nsmallest(n, bet_queue_back)
     return [(b[3].id, b[3].is_back, b[3].odds, b[3].amount) for b in bets]
@@ -52,14 +53,13 @@ def get_num_matched() -> int:
 
 
 def get_fair_odds() -> float:
-    # TODO instead of fair odds put max lay and min back
     if len(bet_queue_back) == 0 or len(bet_queue_lay) == 0:
         return 0
-    
+
     min_back = bet_queue_back[0][3].odds
     max_lay = bet_queue_lay[0][3].odds
-    fair_odds = round((min_back + max_lay)/2, 2)
-    
+    fair_odds = round((min_back + max_lay) / 2, 2)
+
     return fair_odds
 
 
@@ -78,6 +78,7 @@ def _get_odds_liquidity_from_queue(odd, q):
             odd_liq += b[3]
     return odd_liq
 
+
 def _get_highest_liquidity_odd():
     odds_liq = {}
     for m in matched_bets_queue:
@@ -89,6 +90,7 @@ def _get_highest_liquidity_odd():
     best_odd = max(odds_liq.items(), key=lambda x: x[1])[0]
     return best_odd
 
+
 def _get_alternative_odd():
     if len(bet_queue_lay) >= 1:
         return abs(bet_queue_lay[0][0])
@@ -99,24 +101,26 @@ def _get_alternative_odd():
             return _get_highest_liquidity_odd()
     return 0
 
-def _get_liability(odds, stake):
-    return ((odds - 1) * stake)
 
-def get_liquidity_data(span:int=5):
+def _get_liability(odds, stake):
+    return (odds - 1) * stake
+
+
+def get_liquidity_data(span: int = 5):
     # ex: fair_odds=2 span=2 odds_range=[1.98,1.99,2,2.01,2.02]
-    # ex: liq_per_odd_um=[0, 1, 0, 0.5, 0] liq_per_odd_ma=...
+    # ex: liq_per_odd_um_lay=[0, 1, 0.5, 0, 0] liq_per_odd_ma=...
     fair_odds = get_fair_odds()
     if fair_odds == 0:
-        fair_odds = _get_alternative_odd()
+        fair_odds = _get_alternative_odd() # used for the graph
         if fair_odds == 0:
             return [0], [0], [0], [0]
 
-    odds_range = [round((x/100 + fair_odds), 2) for x in range(-span, span+1)]
+    odds_range = [round((x / 100 + fair_odds), 2) for x in range(-span, span + 1)]
 
     # get the top of the 2 heaps
     bq = get_queue_back(span)
     lq = get_queue_lay(span)
-    
+
     # for each odd in the range get the corresponding liquidity
     liq_per_odd_um_back = [0 for odd in odds_range]
     liq_per_odd_um_lay = [0 for odd in odds_range]
@@ -126,15 +130,16 @@ def get_liquidity_data(span:int=5):
         if odd <= fair_odds:
             l = _get_odds_liquidity_from_queue(odd, lq)
             # calculate liability for lay bets
-            l = _get_liability(odd, l);
+            l = _get_liability(odd, l)
             liq_per_odd_um_lay[i] = l
         if odd >= fair_odds:
-            l =_get_odds_liquidity_from_queue(odd, bq)
+            l = _get_odds_liquidity_from_queue(odd, bq)
             liq_per_odd_um_back[i] = l
 
     liq_per_odd_ma = [_get_odds_liquidity_from_matched(o) for o in odds_range]
 
     return odds_range, liq_per_odd_um_lay, liq_per_odd_um_back, liq_per_odd_ma
+
 
 """     norm_term = max(max(liq_per_odd_um_lay), max(liq_per_odd_um_lay), max(liq_per_odd_ma));
     
@@ -143,7 +148,6 @@ def get_liquidity_data(span:int=5):
         liq_per_odd_um_lay = [l/norm_term for l in liq_per_odd_um_lay]
         liq_per_odd_um_back = [l/norm_term for l in liq_per_odd_um_back]
         liq_per_odd_ma = [l/norm_term for l in liq_per_odd_ma] """
-
 
 
 def receive_bet(ts: float, is_back: bool, amount: float, odds: float) -> float:
@@ -165,7 +169,9 @@ def receive_bet(ts: float, is_back: bool, amount: float, odds: float) -> float:
             bet.amount -= qt
             top.amount -= qt
             amount_matched += qt
-            matched_bets_queue.append((bet.id, top.id, qt + _get_liability(top.odds, qt), top.odds))
+            matched_bets_queue.append(
+                (bet.id, top.id, qt + _get_liability(top.odds, qt), top.odds)
+            )
             if top.amount <= EPS:
                 heapq.heappop(bet_queue_lay)
 
@@ -182,7 +188,9 @@ def receive_bet(ts: float, is_back: bool, amount: float, odds: float) -> float:
             bet.amount -= qt
             top.amount -= qt
             amount_matched += qt
-            matched_bets_queue.append((top.id, bet.id, qt + _get_liability(top.odds, qt), top.odds))
+            matched_bets_queue.append(
+                (top.id, bet.id, qt + _get_liability(top.odds, qt), top.odds)
+            )
             if top.amount <= EPS:
                 heapq.heappop(bet_queue_back)
 

@@ -38,7 +38,6 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-/* Layout: chart grows, form keeps a fixed width; wraps below on narrow screens */
 .row-div {
   display: flex;
   flex-direction: row;
@@ -56,12 +55,19 @@ body {
   margin: 0;
 }
 
+/* Chart height comes from aspect-ratio here (16:9 desktop, 4:3 tablet, 1:1 phone),
+   so it re-adapts live on every resize or rotation. Chart.js sets a fixed pixel
+   size on the canvas, so the card must not take its width from the canvas
+   (overflow + contain), otherwise it could never grow again after shrinking. */
 .chart-container {
   position: relative;
   flex: 1 1 480px;
   min-width: 0;
+  overflow: hidden;
+  contain: inline-size;
   width: auto;
   max-width: none;
+  aspect-ratio: 16 / 9;
   margin: 0;
   padding: 20px;
   background: var(--surface);
@@ -69,7 +75,7 @@ body {
   border-radius: var(--radius);
 }
 
-.chart-container canvas { max-width: 100%; }
+.chart-container canvas { display: block; max-width: 100%; }
 
 .crop-container {
   width: 200px;
@@ -178,20 +184,18 @@ p span { color: var(--text); font-weight: 600; margin-left: 6px; }
 #betBtn:active { transform: scale(0.98); }
 #betBtn:focus  { box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent); }
 
-/* Tablet and below: stack form under chart, full width */
 @media (max-width: 900px) {
   :root { --gap: 20px; --pad: 20px; }
   .row-div { flex-direction: column; align-items: stretch; }
-  .chart-container { flex: 0 0 auto; width: 100%; }
+  .chart-container { flex: 0 0 auto; width: 100%; aspect-ratio: 4 / 3; }
   #betForm { flex: 0 0 auto; width: 100%; }
 }
 
-/* Phones: tighter spacing, larger touch targets, 16px inputs stop iOS zoom */
 @media (max-width: 480px) {
   :root { --gap: 16px; --pad: 14px; --radius: 10px; --control-h: 48px; }
   body { padding-top: 16px; }
   .crop-container { width: 140px; height: 70px; margin-bottom: 16px; }
-  .chart-container { padding: 12px; }
+  .chart-container { padding: 12px; aspect-ratio: 1 / 1; }
   #betForm { padding: 16px; }
   .column-div { gap: 16px; }
   #betForm input[type="number"] { font-size: 16px; }

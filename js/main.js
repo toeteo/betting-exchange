@@ -107,8 +107,7 @@ data: {
 },
 options: {
     responsive: true,
-    maintainAspectRatio: true,
-    aspectRatio: window.innerWidth < 600 ? 1.1 : 1.8,
+    maintainAspectRatio: false, // chart height is set by .chart-container in CSS
     layout: { padding: { top: 20 } },
     interaction: { mode: 'index', intersect: false },
     animation: {
