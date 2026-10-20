@@ -1,80 +1,204 @@
-.queue-div {
-    display: flex;
-    flex-direction: column;
-}
-.chart-container {
-    width: 600px;
-    max-width: 90%;
-    margin: 40px auto;
-}
-.crop-container {
-    width: 200px;       /* Set your target width */
-    height: 100px;      /* Set your target height */
-    overflow: hidden;   /* Cut off anything that overflows the box */
+/* Palette: only these 8 colours are used anywhere (JS reads them from here) */
+:root {
+  --bg: #0b0d10;
+  --surface: #14171c;
+  --border: #23272f;
+  --text: #e8eaed;
+  --muted: #7d8590;
+  --back: #4da3ff;
+  --lay: #ff7a95;
+  --accent: #19e68c;
+
+  --gap: 32px;
+  --pad: 32px;
+  --radius: 12px;
+  --control-h: 44px;
+
+  --pico-font-family: Inter, -apple-system, "Segoe UI", system-ui, sans-serif;
+  --pico-background-color: var(--bg);
+  --pico-color: var(--text);
+  --pico-border-radius: 8px;
+  --pico-form-element-background-color: var(--bg);
+  --pico-form-element-border-color: var(--border);
+  --pico-form-element-active-border-color: var(--accent);
+  --pico-form-element-focus-color: color-mix(in srgb, var(--accent) 25%, transparent);
+  --pico-form-element-color: var(--text);
+  --pico-form-element-placeholder-color: var(--muted);
 }
 
-.crop-container img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;     /* Fits and crops the image without stretching */
-    object-position: center; /* Focuses on the center (can use top, bottom, etc.) */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body { background: var(--bg); color: var(--text); }
+
+body {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px var(--pad);
+  -webkit-font-smoothing: antialiased;
+  font-variant-numeric: tabular-nums;
 }
 
-p {
-    color: white;
-}
-
+/* Layout: chart grows, form keeps a fixed width; wraps below on narrow screens */
 .row-div {
-    display: flex;
-    flex-direction: row;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--gap);
+  padding-inline: 0;
 }
 
 .column-div {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 20px;
+  margin: 0;
 }
+
+.chart-container {
+  position: relative;
+  flex: 1 1 480px;
+  min-width: 0;
+  width: auto;
+  max-width: none;
+  margin: 0;
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.chart-container canvas { max-width: 100%; }
+
+.crop-container {
+  width: 200px;
+  height: 100px;
+  overflow: hidden;
+  opacity: 0.9;
+  margin-bottom: 24px;
+}
+
+.crop-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+p {
+  color: var(--muted);
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+p span { color: var(--text); font-weight: 600; margin-left: 6px; }
+
+#betForm {
+  flex: 0 0 300px;
+  height: fit-content;
+  margin: 0;
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+#betForm p { margin: 0; }
+
+#betForm input[type="number"] {
+  margin: 0;
+  height: var(--control-h);
+  font-size: 1rem;
+  font-weight: 500;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  box-shadow: none;
+  transition: border-color 0.15s ease;
+}
+#betForm input[type="number"]:focus { border-color: var(--accent); }
 
 .segmented-control {
-    display: inline-flex;
-    padding: 3px;
-    border-radius: 0.25rem;
-    user-select: none;
+  display: flex;
+  padding: 3px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  user-select: none;
 }
 
-/* Hide native radio inputs visually while keeping accessible */
 .segmented-control input[type="radio"] {
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .segmented-control label {
-    flex: 1;
-    padding: 6px 18px;
-    font-size: 14px;
-    font-weight: 500;
-    color: #4b5563;
-    cursor: pointer;
-    border-radius: 0.25rem;
-    text-align: center;
-    transition: all 0.15s ease-in-out;
+  flex: 1;
+  margin: 0;
+  padding: 8px 18px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: 8px;
+  text-align: center;
+  transition: all 0.15s ease-in-out;
 }
+.segmented-control label:hover { color: var(--text); }
 
-/* Active state styles */
-#backRadio:checked + label {
-    background: #0074e4; /* Back: Blue */
-    color: #ffffff;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
-}
+#backRadio:checked + label { background: var(--back); color: var(--bg); }
+#layRadio:checked + label  { background: var(--lay);  color: var(--bg); }
 
-#layRadio:checked + label {
-    background: #f76a87; /* Lay: Rose/Pink */
-    color: #ffffff;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
-}
-
-/* Focus ring for keyboard users */
 .segmented-control input[type="radio"]:focus-visible + label {
-    outline: 2px solid #111827;
-    outline-offset: 1px;
+  outline: 2px solid var(--text);
+  outline-offset: 1px;
+}
+
+#betBtn {
+  width: 100%;
+  height: var(--control-h);
+  margin: 0;
+  background: var(--accent);
+  border: none;
+  border-radius: 8px;
+  color: var(--bg);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: transform 0.1s ease, filter 0.15s ease;
+}
+#betBtn:hover  { filter: brightness(1.1); }
+#betBtn:active { transform: scale(0.98); }
+#betBtn:focus  { box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent); }
+
+/* Tablet and below: stack form under chart, full width */
+@media (max-width: 900px) {
+  :root { --gap: 20px; --pad: 20px; }
+  .row-div { flex-direction: column; align-items: stretch; }
+  .chart-container { flex: 0 0 auto; width: 100%; }
+  #betForm { flex: 0 0 auto; width: 100%; }
+}
+
+/* Phones: tighter spacing, larger touch targets, 16px inputs stop iOS zoom */
+@media (max-width: 480px) {
+  :root { --gap: 16px; --pad: 14px; --radius: 10px; --control-h: 48px; }
+  body { padding-top: 16px; }
+  .crop-container { width: 140px; height: 70px; margin-bottom: 16px; }
+  .chart-container { padding: 12px; }
+  #betForm { padding: 16px; }
+  .column-div { gap: 16px; }
+  #betForm input[type="number"] { font-size: 16px; }
+  .segmented-control label { padding: 12px 18px; }
+  p { font-size: 0.72rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
 }

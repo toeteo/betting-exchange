@@ -2,51 +2,41 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <title>betting exchange</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link
-            rel="stylesheet"
-            href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"
-        >
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
         <link rel="stylesheet" href="/css/style.css">
     </head>
     <body>
         <div class="crop-container">
             <img src="/images/logo.png" alt="logo">
         </div>
-        <div class="row-div", style="padding-inline: 20px; align-items: center;">
+        <div class="row-div">
             <div class="chart-container">
                 <canvas id="liveChart"></canvas>
             </div>
-            <form id="betForm" style="height: fit-content; justify-content: center;">
-            <div class="column-div" style="justify-content: center; gap: 20px; margin: 0;">
-                <div class="segmented-control">
-                <input onclick="onBetTypeChanged()" type="radio" name="bet-type" id="backRadio" value="back" checked>
-                <label for="backRadio">back</label>
+            <form id="betForm">
+                <div class="column-div">
+                    <div class="segmented-control">
+                        <input onclick="onBetTypeChanged()" type="radio" name="bet-type" id="backRadio" value="back" checked>
+                        <label for="backRadio">back</label>
 
-                <input onclick="onBetTypeChanged()" type="radio" name="bet-type" id="layRadio" value="lay">
-                <label for="layRadio">lay</label>
+                        <input onclick="onBetTypeChanged()" type="radio" name="bet-type" id="layRadio" value="lay">
+                        <label for="layRadio">lay</label>
+                    </div>
+
+                    <input oninput="updateLiability()" type="number" step="0.01" id="amountInput" placeholder="Stake" required>
+                    <input oninput="updateLiability()" type="number" step="0.01" id="oddsInput" placeholder="Odds" required>
+
+                    <p>liability: <span id="liabilitySpan"></span></p>
+
+                    <button type="submit" id="betBtn">bet</button>
                 </div>
-
-                <input style="margin: 0;" oninput="updateLiability()" type="number" step="0.01" id="amountInput" placeholder="Stake" required>
-                <input style="margin: 0;" oninput="updateLiability()"type="number" step="0.01" id="oddsInput" placeholder="Odds" required>
-                
-                <p style="margin: 0;">liability: <span id="liabilitySpan"></span></p>
-
-                <button type="submit" style="background-color: rgba(0, 255, 0, 0.7);" id="betBtn">bet</button>
-            </div>
             </form>
         </div>
         <p>matched bets so far: <span id="num-matched">0</span></p>
         <p>fair odds: <span id="fair-odds">0</span></p>
-        
-<!--         <div class="queue-div">
-            <p>open bets (max 5 each): </p>
-            <div id="open-bets-list"></div>
-        </div> -->
         <script src="/js/main.js"></script>
     </body>
 </html>

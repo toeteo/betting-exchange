@@ -17,6 +17,27 @@ const betForm = document.getElementById('betForm');
 const ctx = document.getElementById('liveChart');
 
 
+// theme (read from the CSS variables in style.css)
+const css = getComputedStyle(document.documentElement);
+const cssVar = name => css.getPropertyValue(name).trim();
+const alpha = (hex, a) => {
+    const n = parseInt(hex.slice(1), 16);
+    return `rgba(${n >> 16}, ${(n >> 8) & 255}, ${n & 255}, ${a})`;
+};
+
+const theme = {
+    text: cssVar('--text'),
+    muted: cssVar('--muted'),
+    grid: alpha(cssVar('--text'), 0.06),
+    surface: cssVar('--surface'),
+    border: cssVar('--border'),
+    lay: alpha(cssVar('--lay'), 0.75),
+    back: alpha(cssVar('--back'), 0.75),
+    matched: alpha(cssVar('--accent'), 0.6),
+    fairLine: alpha(cssVar('--text'), 0.5),
+};
+
+
 // fair odds line
 const fairLine = {
     id: 'fairLine',
@@ -30,21 +51,22 @@ const fairLine = {
 
         ctx.save();
         ctx.setLineDash([6, 4]);
-        ctx.strokeStyle = 'white';
+        ctx.strokeStyle = theme.fairLine;
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(px, top);
         ctx.lineTo(px, bottom);
         ctx.stroke();
         ctx.setLineDash([]);
-        ctx.fillStyle = 'white';
         ctx.restore();
     }
 }
 
 
 // chart initialization
-Chart.defaults.color = 'white';
+Chart.defaults.color = theme.muted;
+Chart.defaults.font.family = cssVar('--pico-font-family');
+Chart.defaults.font.size = 11;
 
 const chart = new Chart(ctx, {
 type: 'line',
@@ -56,47 +78,46 @@ data: {
         data: [],
         stepped: 'middle',
         fill: 'origin',
-        borderColor: 'rgba(0, 0, 128, 0)',
-        backgroundColor: 'rgba(228, 116, 0, 0.7)',
+        borderColor: 'transparent',
+        backgroundColor: theme.lay,
         borderWidth: 1.5,
         pointRadius: 0,
-        color: 'white'
     },
     {
         label: 'back',
         data: [],
         stepped: 'middle',
         fill: 'origin',
-        borderColor: 'rgba(0, 0, 128, 0)',
-        backgroundColor: 'rgba(0, 116, 228, 0.7)',
+        borderColor: 'transparent',
+        backgroundColor: theme.back,
         borderWidth: 1.5,
         pointRadius: 0,
-        color: 'white'
     },
     {
         label: 'matched',
         data: [],
         stepped: 'middle',
         fill: 'origin',
-        borderColor: 'rgba(255, 159, 64, 0)',
-        backgroundColor: 'rgba(255, 255, 255, 0.7)',
+        borderColor: 'transparent',
+        backgroundColor: theme.matched,
         borderWidth: 1.5,
         pointRadius: 0,
-        color: 'white'
     },
     ],
 },
 options: {
-    color: 'white',
     responsive: true,
+    maintainAspectRatio: true,
+    aspectRatio: window.innerWidth < 600 ? 1.1 : 1.8,
     layout: { padding: { top: 20 } },
     interaction: { mode: 'index', intersect: false },
     animation: {
         duration: 100
     },
     scales: {
-    x: { title: { display: true, text: 'lay ◀ odds ▶ back', color: 'white' , font: {size: 14} },
-        grid: {color: 'rgba(255, 255, 255, 0.1)' },
+    x: { title: { display: true, text: 'lay ◀ odds ▶ back', color: theme.muted, font: { size: 11, weight: 500 } },
+        grid: { color: theme.grid },
+        ticks: { color: theme.muted },
         border: {display: false },
         display: true,
     },
@@ -110,19 +131,28 @@ options: {
             scale.max = maxLimit;
             scale.min = -maxLimit;
         },
-        title: { display: true, text: 'liquidity', color: 'white', font: {size: 14} },
-        ticks: { callback: v => Math.abs(v).toLocaleString(), color: 'white' },
-        grid: {color: 'rgba(255, 255, 255, 0.1)' },
+        title: { display: true, text: 'liquidity', color: theme.muted, font: { size: 11, weight: 500 } },
+        ticks: { callback: v => Math.abs(v).toLocaleString(), color: theme.muted },
+        grid: { color: theme.grid },
         border: { display: false },
     },
     },
     plugins: {
+        legend: {
+            labels: { color: theme.muted, usePointStyle: true, pointStyle: 'rectRounded', boxWidth: 8, boxHeight: 8 },
+        },
         tooltip: {
+            backgroundColor: theme.surface,
+            borderColor: theme.border,
+            borderWidth: 1,
+            cornerRadius: 8,
+            padding: 10,
+            titleColor: theme.muted,
+            bodyColor: theme.text,
+            boxPadding: 4,
             callbacks: {
-            label: c => `${c.dataset.label}: ${Math.abs(c.parsed.y).toLocaleString()}`,
-            color: 'white'
+                label: c => `${c.dataset.label}: ${Math.abs(c.parsed.y).toLocaleString()}`,
             },
-            color: 'white',
         },
     },
 },
