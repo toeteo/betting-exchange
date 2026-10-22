@@ -1,6 +1,7 @@
 import requests
 from random import randint, uniform
 from time import sleep
+import sys
 
 bet_link = "http://localhost:8000/bet"
 
@@ -19,7 +20,7 @@ def post_bet(is_back, bet_amount, bet_odds):
 def place_bet():
     global total_liquidity
     is_back = bool(randint(0, 1))  # Randomly choose True or False
-    bet_amount = round(round(uniform(0, 20), 1) * 5 * 100) # Random bet amount between 0.5 and 100
+    bet_amount = round(round(uniform(0.2, 20), 1) * 5 * 100) # Random bet amount between 0.5 and 100
     bet_odds = round(round(uniform(1.9, 2.1), 2) * 100) # Random odds
     result = post_bet(is_back, bet_amount, bet_odds)
     liability = bet_amount if is_back else (bet_odds - 100) * bet_amount // 100
@@ -28,10 +29,13 @@ def place_bet():
 
 
 def main():
-    for _ in range(10):  # Place 10 random bets
+    num_bets = int(sys.argv[1]) if len(sys.argv) > 1 else 10
+
+    for _ in range(num_bets):  # Place the specified number of random bets
         place_bet()
-        sleep(0.1)  # Wait for 1 second before placing the next bet
-        print(total_liquidity)
+        # sleep(0.1)  # Wait for 1 second before placing the next bet
+    
+    print(f"Total liquidity: {total_liquidity}")
 
 if __name__ == "__main__":
     main()

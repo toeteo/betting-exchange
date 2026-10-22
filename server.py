@@ -3,17 +3,12 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, field_validator
-from matcher import (
-    get_num_matched,
-    receive_bet,
-    get_queue_lay,
-    get_queue_back,
-    get_fair_odds,
-    get_liquidity_data,
-)
+from matcher import Market
 from time import time
 
 app = FastAPI()
+
+m = Market()
 
 app.mount("/images", StaticFiles(directory="images"), name="images")
 app.mount("/js", StaticFiles(directory="js"), name="js")
@@ -35,13 +30,17 @@ class BetRequest(BaseModel):
 async def root():
     return FileResponse("index.html")
 
+@app.get("/test")
+async def test():
+    return {"total_liquidity": m.get_total_liquidity()}
+
 @app.post("/bet")
 def place_bet(bet: BetRequest):
     ts = time()
     
-    amount_matched_int = receive_bet(ts, bet.is_back, bet.bet_amount, bet.bet_odds)
+    amounts_matched = m.receive_bet(ts, bet.is_back, bet.bet_amount, bet.bet_odds)
     
-    return {"amount_matched": amount_matched_int}
+    return {"amounts_matched": amounts_matched}
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
@@ -49,17 +48,17 @@ async def websocket_endpoint(websocket: WebSocket):
     try:
         while True:
             await asyncio.sleep(0.1)
-            num_matched = get_num_matched()
+            num_matched = m.get_num_matched()
             
-            max_lay = get_queue_lay(1)
+            max_lay = m.get_queue_lay(1)
             max_lay_val = max_lay[0][2] if len(max_lay) != 0 else 0
             
-            min_back = get_queue_back(1)
+            min_back = m.get_queue_back(1)
             min_back_val = min_back[0][2] if len(min_back) != 0 else 0
             
-            fair_odds_val = get_fair_odds()
+            fair_odds_val = m.get_fair_odds()
             
-            odds_int, liq_um_lay_int, liq_um_back_int, liq_ma_int = get_liquidity_data()
+            odds_int, liq_um_lay_int, liq_um_back_int, liq_ma_int = m.get_liquidity_data()
             
             payload = {
                 "num_matched": num_matched,
