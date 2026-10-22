@@ -104,28 +104,35 @@ def get_liquidity_data(span: int = 5):
 
 
 def receive_bet(ts: float, is_back: bool, amount: float, odds: float) -> float:
-    # TODO only accept with a 0.01 step (find a good dynamic step)
-    # TODO fix EPS, negatives etc...
-    # odds -> round(x, 2) amout -> min: 1 step:0.5
-    global next_id
-
-    # boundary checks
+    # odds minimum boundary
     if odds <= 1.0:
-        raise ValueError("Odds must be greater than 1.0.")
-    if amount < 1.0:
-        raise ValueError("Stake amount must be at least 1.0.")
+        raise RuntimeError(
+            f"Engine invariant violated: odds must be > 1.0, received {odds}"
+        )
 
-    # odds step: 0.01
+    # odds tick size (step: 0.01)
     scaled_odds = odds * 100
     if not math.isclose(scaled_odds, round(scaled_odds), abs_tol=EPS):
-        raise ValueError(f"Invalid odds {odds}: must adhere to a 0.01 tick size.")
+        raise RuntimeError(
+            f"Engine invariant violated: odds {odds} must adhere to a 0.01 tick size"
+        )
     odds = round(odds, 2)
 
-    # stake step: 0.5
+    # stake minimum boundary
+    if amount < 1.0:
+        raise RuntimeError(
+            f"Engine invariant violated: amount must be >= 1.0, received {amount}"
+        )
+
+    # stake step size (step: 0.5)
     scaled_amount = amount * 2
     if not math.isclose(scaled_amount, round(scaled_amount), abs_tol=EPS):
-        raise ValueError(f"Invalid stake amount {amount}: must be in steps of 0.5.")
+        raise RuntimeError(
+            f"Engine invariant violated: amount {amount} must be in steps of 0.5"
+        )
     amount = round(amount, 2)
+
+    global next_id
 
     bet = Bet(next_id, ts, is_back, odds, amount)
     next_id += 1
