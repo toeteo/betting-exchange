@@ -1,5 +1,6 @@
 from collections import deque
 import heapq
+import math
 
 EPS = 1e-9
 
@@ -32,6 +33,9 @@ def reset():
     bet_queue_lay.clear()
     bet_queue_back.clear()
     matched_bets_queue.clear()
+    odds_liq_dict_lay.clear()
+    odds_liq_dict_back.clear()
+    odds_liq_dict_ma.clear()
     next_id = 1
 
 
@@ -64,34 +68,6 @@ def get_fair_odds() -> float:
     fair_odds = round((min_back + max_lay) / 2, 2)
 
     return fair_odds
-
-
-def _get_odds_liquidity_from_matched(odd):
-    odd_liq = 0
-    for m in matched_bets_queue:
-        if m[3] == odd:
-            odd_liq += m[2]
-    return odd_liq
-
-
-def _get_odds_liquidity_from_queue(odd, q):
-    odd_liq = 0
-    for b in q:
-        if b[2] == odd:
-            odd_liq += b[3]
-    return odd_liq
-
-
-def _get_highest_liquidity_odd():
-    odds_liq = {}
-    for m in matched_bets_queue:
-        if m[3] not in odds_liq:
-            odds_liq[m[3]] = 0
-        odds_liq[m[3]] += m[2]
-    if len(odds_liq) == 0:
-        return None
-    best_odd = max(odds_liq.items(), key=lambda x: x[1])[0]
-    return best_odd
 
 
 def _get_alternative_odd():
@@ -130,11 +106,26 @@ def get_liquidity_data(span: int = 5):
 def receive_bet(ts: float, is_back: bool, amount: float, odds: float) -> float:
     # TODO only accept with a 0.01 step (find a good dynamic step)
     # TODO fix EPS, negatives etc...
+    # odds -> round(x, 2) amout -> min: 1 step:0.5
     global next_id
-    if amount <= 0 or odds <= 1:
-        raise ValueError("amount must be > 0 and odds must be > 1")
 
+    # boundary checks
+    if odds <= 1.0:
+        raise ValueError("Odds must be greater than 1.0.")
+    if amount < 1.0:
+        raise ValueError("Stake amount must be at least 1.0.")
+
+    # odds step: 0.01
+    scaled_odds = odds * 100
+    if not math.isclose(scaled_odds, round(scaled_odds), abs_tol=EPS):
+        raise ValueError(f"Invalid odds {odds}: must adhere to a 0.01 tick size.")
     odds = round(odds, 2)
+
+    # stake step: 0.5
+    scaled_amount = amount * 2
+    if not math.isclose(scaled_amount, round(scaled_amount), abs_tol=EPS):
+        raise ValueError(f"Invalid stake amount {amount}: must be in steps of 0.5.")
+    amount = round(amount, 2)
 
     bet = Bet(next_id, ts, is_back, odds, amount)
     next_id += 1
