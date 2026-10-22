@@ -16,7 +16,6 @@ const betForm = document.getElementById('betForm');
 
 const ctx = document.getElementById('liveChart');
 
-
 // theme (read from the CSS variables in style.css)
 const css = getComputedStyle(document.documentElement);
 const cssVar = name => css.getPropertyValue(name).trim();
@@ -36,7 +35,6 @@ const theme = {
     matched: alpha(cssVar('--accent'), 0.6),
     fairLine: alpha(cssVar('--text'), 0.5),
 };
-
 
 // fair odds line
 const fairLine = {
@@ -61,7 +59,6 @@ const fairLine = {
         ctx.restore();
     }
 }
-
 
 // chart initialization
 Chart.defaults.color = theme.muted;
@@ -107,7 +104,7 @@ data: {
 },
 options: {
     responsive: true,
-    maintainAspectRatio: false, // chart height is set by .chart-container in CSS
+    maintainAspectRatio: false,
     layout: { padding: { top: 20 } },
     interaction: { mode: 'index', intersect: false },
     animation: {
@@ -121,12 +118,8 @@ options: {
         display: true,
     },
     y: {
-        // Intercept the data limits before the chart generates ticks
         afterDataLimits: (scale) => {
-            // Find the absolute largest value in your current data
             const maxLimit = Math.max(Math.abs(scale.max), Math.abs(scale.min));
-            
-            // Force the scale to be perfectly symmetrical around 0
             scale.max = maxLimit;
             scale.min = -maxLimit;
         },
@@ -158,7 +151,6 @@ options: {
 plugins: [fairLine]
 });
 
-
 function _getLiabilityValue (odds, stake) {
     if (isNaN(odds) || isNaN(stake)) return 0;
     if (odds < 1) return 0;
@@ -166,20 +158,16 @@ function _getLiabilityValue (odds, stake) {
     let l = 0;
 
     if (!backRadio.checked) {
-        // lay bet
         l = (odds - 1) * stake;
     }
     else {
-        // back bet
         l = stake;
     }
 
     return l;
 }
 
-
 function updateLiability () {
-    // calculate liability after odds change
     let odds = parseFloat(oddsInput.value);
     let stake = parseFloat(amountInput.value);
     let l = _getLiabilityValue(odds, stake);
@@ -187,28 +175,24 @@ function updateLiability () {
     liabilitySpan.textContent = l.toFixed(2);
 }
 
-
 function onBetTypeChanged() {
     oddsInitialized = false;
 }
 
-
 betForm.addEventListener('submit', async (event) => {
   event.preventDefault();
 
-  // gather input
   const isBack = document.getElementById('backRadio').checked;
   const betAmount = parseFloat(document.getElementById('amountInput').value);
   const betOdds = parseFloat(document.getElementById('oddsInput').value);
 
-  // create payload
+  // Convert floats to integer ticks before sending
   const payload = {
-    is_back: isBack,        // boolean: true / false
-    bet_amount: betAmount,  // float
-    bet_odds: betOdds       // float
+    is_back: isBack,
+    bet_amount: Math.round(betAmount * 100),
+    bet_odds: Math.round(betOdds * 100)
   };
 
-  // send payload
   try {
     const response = await fetch('/bet', {
       method: 'POST',
@@ -225,7 +209,6 @@ betForm.addEventListener('submit', async (event) => {
     const data = await response.json();
     console.log('Server response:', data);
 
-    // reset form
     amountInput.value = '';
     oddsInitialized = false;
 
@@ -241,33 +224,29 @@ ws.onmessage = (event) => {
     // render num matched
     document.getElementById("num-matched").textContent = data.num_matched;
 
-    // render fair odds
-    fairOdds = data.fair_odds;
-    document.getElementById("fair-odds").textContent = data.fair_odds;
+    // render fair odds - format for display
+    fairOdds = (data.fair_odds / 100).toFixed(2);
+    document.getElementById("fair-odds").textContent = fairOdds;
     
-    // update chart
-    chart.data.datasets[0].data = data.liq_um_lay;
-    chart.data.datasets[1].data = data.liq_um_back;
-    chart.data.datasets[2].data = data.liq_ma.map((v) => -v);
-    chart.data.labels = data.odds;
+    // update chart - unscale the data arrays
+    chart.data.datasets[0].data = data.liq_um_lay.map(v => v / 100);
+    chart.data.datasets[1].data = data.liq_um_back.map(v => v / 100);
+    chart.data.datasets[2].data = data.liq_ma.map(v => -v / 100);
+    chart.data.labels = data.odds.map(o => (o / 100).toFixed(2));
     chart.update();
 
     // update recommended odds
     if (!oddsInitialized) {
-        
         if (backRadio.checked) {
-            // back
             if (data.max_lay != 0) {
-                oddsInput.value = data.max_lay;
+                oddsInput.value = (data.max_lay / 100).toFixed(2);
             }
         }
         else {
-            // lay
             if (data.min_back != 0) {
-                oddsInput.value = data.min_back;
+                oddsInput.value = (data.min_back / 100).toFixed(2);
             }
         }
-
         oddsInitialized = true;
         updateLiability();
     }
